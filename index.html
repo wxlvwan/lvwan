@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Markdown Merger</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    label { display: block; margin-bottom: 1em; }
+    #downloadLink { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Markdown Merger</h1>
+  <p>Select a directory containing Markdown files and merge them into a single file.</p>
+  <label>
+    Select directory:
+    <input type="file" id="directoryInput" webkitdirectory multiple>
+  </label>
+  <label>
+    Output file name:
+    <input type="text" id="outputName" placeholder="merged.md" value="merged.md">
+  </label>
+  <button id="mergeButton">Merge and Download</button>
+  <a id="downloadLink" style="display:none;"></a>
+
+  <script>
+    const dirInput = document.getElementById('directoryInput');
+    const outputNameInput = document.getElementById('outputName');
+    const mergeButton = document.getElementById('mergeButton');
+    const downloadLink = document.getElementById('downloadLink');
+
+    mergeButton.addEventListener('click', async () => {
+      const files = Array.from(dirInput.files || []).filter(f => f.name.toLowerCase().endsWith('.md'));
+      if (files.length === 0) {
+        alert('Please select a directory with markdown files.');
+        return;
+      }
+      const contents = await Promise.all(files.map(f => f.text()));
+      const merged = contents.join('\n\n');
+      let outputName = outputNameInput.value.trim() || 'merged.md';
+      if (!outputName.toLowerCase().endsWith('.md')) {
+        outputName += '.md';
+      }
+      const blob = new Blob([merged], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      downloadLink.download = outputName;
+      downloadLink.textContent = 'Download ' + outputName;
+      downloadLink.style.display = 'inline';
+      downloadLink.click();
+    });
+  </script>
+</body>
+</html>
